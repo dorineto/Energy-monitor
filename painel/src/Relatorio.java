@@ -1,0 +1,4 @@
+class Relatorio{
+	public Relatorio(){
+	}
+}

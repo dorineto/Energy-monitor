@@ -1,0 +1,4 @@
+class Controle{
+	public Controle(){
+	}
+}
