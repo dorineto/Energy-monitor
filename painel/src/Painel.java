@@ -26,7 +26,7 @@ class Painel{
 		}
 
 		if(trys == 0)
-			throw new ConnectionException("Erro ao carregar o arquivo! tente novamente mais tarde.");
+			throw new ConnectionException("Erro ao carregar o arquivo de configuração! Tente novamente mais tarde.");
 
 		this.dashb = new Dashboard();
 		this.relat = new Relatorio();
@@ -34,11 +34,17 @@ class Painel{
 	}
 
 	public static void main(String[] args){
-		Painel p = new Painel();
-		
+		boolean continuarPainel = true;
 		Scanner sc = new Scanner(System.in);
 		
-		boolean continuarPainel = true;
+		try{
+			Painel p = new Painel();
+		}
+		catch(ConnectionException e){
+			System.out.println(e.getMessage());
+			continuarPainel = false;
+		}
+
 		while(continuarPainel){
 			System.out.println("\n----- Painel -----");
 			int escSubMenu = Painel.getMenuOption(new String[] {"Dashboard", "Relatórios", "Controle", "Sair"});
