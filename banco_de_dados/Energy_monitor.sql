@@ -85,3 +85,10 @@ create table Computador_Setor(
 	,foreign key(id_comp) references Computadores(id_comp)
 	,foreign key(id_setor) references Setores(id_setor)
 );
+go
+
+
+insert into Tipo_computador(nome) values ('Desktop'),
+					 ('Notebook'),
+					 ('Sevidor');
+go

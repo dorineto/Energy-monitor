@@ -20,7 +20,8 @@ class Conector{
 
 		this.makeConnection();
 	}
-
+	
+	//Tenta fazer a conexão com o banco de dados com as informações passadas no arquivo de configuração 
 	private void makeConnection(){
 		int trys = 3;
 		while(trys != 0){
@@ -45,6 +46,8 @@ class Conector{
 		}
 	}
 	
+	//Verifica se a conexão ainda é valida e está utilizavel
+	//se não estiver tenta refazer a conexão
 	public void remakeConnection(){
 		try{
 			if( this.conn == null || this.conn.isClosed() || (! this.conn.isValid( this.conn.getNetworkTimeout() ))){
