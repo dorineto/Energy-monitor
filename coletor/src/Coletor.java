@@ -109,7 +109,6 @@ class Coletor{
 				System.exit(1);
 			}
 			catch(SQLException e){
-				e.printStackTrace();
 				this.writeErrorLog("Erro ao fazer uma operação no banco de dados! Mensagem de erro: "+e.getMessage());
 				System.exit(1);
 			}
@@ -126,6 +125,7 @@ class Coletor{
 		Runtime.getRuntime().addShutdownHook( new Thread( new StopColetor(colet) ) ); //Adiciona uma rotina quando
 											      //o programa é finalizado
 		colet.start();	
+		System.out.println("Para sair do programa aperte <Control+c>");
 		while(true){
 			colet.markTime(false);
 			colet.timeOut();	
@@ -155,13 +155,6 @@ class Coletor{
 			String query = "";
 			ResultSet res;	
 
-			/*String query = "Select * from Computadores (nolock) where id_comp = "+id_comp;
-			ResultSet res = this.conect.getConnection().createStatement().executeQuery(query);
-			if(! res.next()){
-				this.writeErrorLog("O id_comp no arquivo config.conf é inválido. Por favor verifique.");
-				System.exit(1);
-			}*/
-			
 			if(this.checkDayPassed()){ //Verifica se a ultima data no sistema é anterior da atual, 
 						   //se passou a quantidade de horas atual tabela Quant_horas
 						   //E registrada na tabela Historico de horas com a ultima da do sistema 
@@ -204,7 +197,6 @@ class Coletor{
 			this.started = true;
 		}
 		catch(SQLException e){
-			e.printStackTrace();
 			this.writeErrorLog("Erro ao fazer uma operação no banco de dados! Mensagem de erro: "+e.getMessage());
 			System.exit(1);
 		}
@@ -230,7 +222,6 @@ class Coletor{
 				this.conect.getConnection().createStatement().execute(query);
 			}
 			catch(SQLException e){
-				e.printStackTrace();
 				this.writeErrorLog("Erro ao fazer uma operação no banco de dados! Mensagem de erro: "+e.getMessage());
 				if(!isStopping)//Caso o coletor estiver parando um erro não fará o coletor sair diretamente
 					System.exit(1);
@@ -263,7 +254,6 @@ class Coletor{
 				this.comp.getContador().setUltimaData(LocalDate.now());
 			}
 			catch(SQLException e){
-				e.printStackTrace();
 				this.writeErrorLog("Erro ao fazer uma operação no banco de dados! Mensagem de erro: "+e.getMessage());
 				if(!isStopping)//Caso se o coletor estiver parando um erro não fará o coletor sair diretamente
 					System.exit(1);

@@ -10,7 +10,6 @@ import java.util.Scanner;
 
 class Painel{
 	private Conector conect;
-	private Dashboard dashb;
 	private Relatorio relat;
 	private Controle  contr;
 
@@ -28,7 +27,6 @@ class Painel{
 		if(trys == 0)
 			throw new ConnectionException("Erro ao carregar o arquivo de configuração! Tente novamente mais tarde.");
 
-		this.dashb = new Dashboard();
 		this.relat = new Relatorio();
 		this.contr = new Controle();
 	}
@@ -36,9 +34,10 @@ class Painel{
 	public static void main(String[] args){
 		boolean continuarPainel = true;
 		Scanner sc = new Scanner(System.in);
-		
+		Painel p = null;	
+
 		try{
-			Painel p = new Painel();
+			p = new Painel();
 		}
 		catch(ConnectionException e){
 			System.out.println(e.getMessage());
@@ -47,20 +46,19 @@ class Painel{
 
 		while(continuarPainel){
 			System.out.println("\n----- Painel -----");
-			int escSubMenu = Painel.getMenuOption(new String[] {"Dashboard", "Relatórios", "Controle", "Sair"});
+			int escSubMenu = Painel.getMenuOption(new String[] {"Relatórios", "Controle", "Sair"});
 			
 			switch(escSubMenu){
 				case 1:
 					break;
 				case 2:
-					break;
-				case 3:
 					boolean continuarSubMenu = true;
 					while(continuarSubMenu){
 						System.out.println("\n----- Controle -----");
 						int escFunc =  Painel.getMenuOption(new String[] {"Cadastrar computador"
 										    		 ,"Alterar informações de um computador"
 										    		 ,"Remover computador"
+												 ,"Pegar ID de um computador"
 										    		 ,"Cadastrar setor"
 										    		 ,"Adicionar computador(es) à um setor"
 										    		 ,"Remover computador(es) de um setor"
@@ -79,25 +77,28 @@ class Painel{
 							case 3:  //Remover computador
 								//Fazer implementação
 								break;
-							case 4:  //Cadastrar Setor
+							case 4: //Pegar ID de um computador
+								p.pegaId_comp();
+								break;
+							case 5:  //Cadastrar Setor
 								//Fazer implemnetação
 								break;
-							case 5:  //Adicionar computador(es) a um setor
+							case 6:  //Adicionar computador(es) a um setor
 								//Fazer implementação
 								break;
-							case 6:  //Remover computador(es) de um setor
+							case 7:  //Remover computador(es) de um setor
 								//Fazer implementação
 								break;
-							case 7:  //Alterar nome do setor
+							case 8:  //Alterar nome do setor
 								//Fazer implementação
 								break;
-							case 8:  //Remover setor
+							case 9:  //Remover setor
 								//Fazer implementação
 								break;
-							case 9:  //Voltar para o painel
+							case 10:  //Voltar para o painel
 								continuarSubMenu = false;
 								break;
-							case 10: //Sair
+							case 11: //Sair
 								continuarSubMenu = false;
 								continuarPainel = false;
 								break;
@@ -106,13 +107,13 @@ class Painel{
 						}
 					}
 					break;
-				case 4:
+				case 3:
 					continuarPainel = false;
 					break;
 				default:
 					System.out.println("Opção inválida! Tente novamente.");
 			}
-		}	
+		} 	
 	}
 
 	//Faz um menu apartir do vetor de Strings passados e retorna o número da escolha do usuário, 
@@ -137,7 +138,7 @@ class Painel{
 	//Checa a se a conexão do conector ainda está ativa, caso a conexão não estiver mais ativa,
 	//execultará uma nova conexão, se o processo falhar será tentado mais duas vez. Caso acabar a quantidade
 	//de tentativas será lançado uma ConnectionException 
-	private static void checkConnection(Conector conect){
+	public static void checkConnection(Conector conect){
 		int trys = 3;
 		while(trys != 0 && conect.getFailed()){
 			conect.remakeConnection();
@@ -149,17 +150,18 @@ class Painel{
 	}	
 
 	//Faz um menu de escolha para o usuário apartir das informações da tabela Tipo_computador, e retorna o
-	//id_tipo da escolha feita pelo o usuário. Caso o usuário escolha uma opção inválida será retornado -1. 
-	//Caso ocorra algum erro de tentativa de conexão ou erro ao execultar uma consulta será retornado -2. 
-	public int getId_tipo(){
+	//id_tipo da escolha feita pelo o usuário. Caso o usuário escolha uma opção inválida será retornado -1.
+	//Caso não tenha tipos cadastrados no banco de dados retornará -2.
+	//Caso seja passado um Connection nulo ou erro ao execultar uma consulta será retornado -3. 
+	public static int getId_tipo(Connection conect, boolean hadExit){
+		if(conect == null)
+			return -3;
 		try{
-			Painel.checkConnection(this.conect);
-			
 			ArrayList<Integer> ids = new ArrayList<Integer>();
 			ArrayList<String> options = new ArrayList<String>();
 
 			String query = "select * from Tipo_computador (nolock)";
-			ResultSet res = this.conect.getConnection().createStatement().executeQuery(query);
+			ResultSet res = conect.createStatement().executeQuery(query);
 
 			System.out.print("\n");
 			while(res.next()){
@@ -167,32 +169,40 @@ class Painel{
 				options.add(res.getString("nome"));
 			}
 			
-			String[] optionsArr = new String[options.size()];
+			String[] optionsArr = new String[options.size() + (hadExit? 1 : 0)];
 			optionsArr = options.toArray(optionsArr);
+
+			if(hadExit)
+				optionsArr[options.size()] = "Sair";
 
 			int esc = Painel.getMenuOption( optionsArr );
 
-			return esc != -1? ids.get(esc - 1) : esc; 
-		}catch(ConnectionException e){
-			System.out.println(e.getMessage());
+			if(esc == -1)
+				return -1;
+
+			return esc == optionsArr.length? 0 : ids.get(esc - 1); 
+		}catch(IllegalArgumentException e){
+			System.out.println("Sem tipo de computador cadastrado!");
+			return -2;
 		}catch(SQLException e){
 			System.out.println("Erro ao tentar fazer um processo no banco de dados! Teste novamente.");
+			return -3;
 		}
-		return -2;
 	}
 
 	//Faz um menu de escolha para o usuário apartir das informações da tabela Conputadores, e retorna o
 	//id_comp da escolha feita pelo o usuário. Caso o usuário escolha uma opção inválida será retornado -1. 
-	//Caso ocorra algum erro de tentativa de conexão ou erro ao execultar uma consulta será retornado -2. 
-	public int getId_comp(){
+	//Caso não tenha computadores cadastrados no banco de dados retornará -2.
+	//Caso seja passado um Connection nulo ou erro ao execultar uma consulta será retornado -3. 
+	public static int getId_comp(Connection conect, boolean hadExit){
+		if(conect == null)
+			return -3;
 		try{
-			Painel.checkConnection(this.conect);
-			
 			ArrayList<Integer> ids = new ArrayList<Integer>();
 			ArrayList<String> options = new ArrayList<String>();
 
 			String query = "select id_comp, nome from Computadores (nolock)";
-			ResultSet res = this.conect.getConnection().createStatement().executeQuery(query);
+			ResultSet res = conect.createStatement().executeQuery(query);
 
 			System.out.print("\n");
 			while(res.next()){
@@ -200,51 +210,81 @@ class Painel{
 				options.add(res.getString("nome"));
 			}
 			
-			String[] optionsArr = new String[options.size()];
+			String[] optionsArr = new String[options.size() + (hadExit? 1 : 0)];
 			optionsArr = options.toArray(optionsArr);
 
-			int esc = Painel.getMenuOption( optionsArr );
+			if(hadExit)
+				optionsArr[options.size()] = "Sair";
 
-			return esc != -1? ids.get(esc - 1) : esc; 
-		}catch(ConnectionException e){
-			System.out.println(e.getMessage());
+			int esc = Painel.getMenuOption( optionsArr );
+			
+			if(esc == -1)
+				return -1;
+
+			return esc == optionsArr.length? 0 : ids.get(esc - 1); 
+		}
+		catch(IllegalArgumentException e){
+			System.out.println("Sem computadores cadastrados!");
+			return -2;
 		}catch(SQLException e){
 			System.out.println("Erro ao tentar fazer um processo no banco de dados! Teste novamente.");
+			return -3;
 		}
-		return -2;
 	}
 
 	//Faz um menu de escolha para o usuário apartir das informações da tabela Setores, e retorna o
 	//id_setor da escolha feita pelo o usuário. Caso o usuário escolha uma opção inválida será retornado -1. 
-	//Caso ocorra algum erro de tentativa de conexão ou erro ao execultar uma consulta será retornado -2. 
-	public int getId_setor(){
-		try{
-			Painel.checkConnection(this.conect);
-			
+	//Caso não tenha setores cadastrados no banco de dados retornará -2.
+	//Caso seja passado um Connection nulo ou erro ao execultar uma consulta será retornado -3. 
+	public static int getId_setor(Connection conect, boolean hadExit){
+		if(conect == null)
+			return -3;
+		try{	
 			ArrayList<Integer> ids = new ArrayList<Integer>();
 			ArrayList<String> options = new ArrayList<String>();
 
 			String query = "select * from Setores (nolock)";
-			ResultSet res = this.conect.getConnection().createStatement().executeQuery(query);
+			ResultSet res = conect.createStatement().executeQuery(query);
 
 			System.out.print("\n");
 			while(res.next()){
 				ids.add(res.getInt("id_setor"));
 				options.add(res.getString("nome"));
 			}
-			
-			String[] optionsArr = new String[options.size()];
+
+			String[] optionsArr = new String[options.size() + (hadExit? 1 : 0)];
 			optionsArr = options.toArray(optionsArr);
 
+			if(hadExit)
+				optionsArr[options.size()] = "Sair";
+			
 			int esc = Painel.getMenuOption( optionsArr );
-
-			return esc != -1? ids.get(esc - 1) : esc; 
-		}catch(ConnectionException e){
-			System.out.println(e.getMessage());
-		}catch(SQLException e){
+			
+			if(esc == -1)
+				return -1;
+				
+			return esc == optionsArr.length? 0 : ids.get(esc - 1);
+		}catch(IllegalArgumentException e){
+			System.out.println("Sem setores cadastrados!");
+			return -2;
+		}catch(SQLException e){		
 			System.out.println("Erro ao tentar fazer um processo no banco de dados! Teste novamente.");
+			return -3;
 		}
-		return -2;
+
 	}
 
+	public void pegaId_comp(){
+		int id_comp = 0;
+		do{
+			id_comp = Painel.getId_comp(this.conect.getConnection(), true);
+			if(id_comp == -1)
+				System.out.println("Opção inválida");
+		}while(id_comp == -1);
+
+		if(id_comp == -3)
+			System.exit(1);
+		else if(id_comp != 0)
+			System.out.println("O ID do computador: "+id_comp);
+	}
 }
