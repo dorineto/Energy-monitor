@@ -52,7 +52,11 @@ class Computador{
 
 	public double getConsumo_max(){ return this.consumo_max; }
 
+	public void setConsumo_max(double consumo_max){ this.consumo_max = consumo_max; }
+
 	public double getConsumo_medio(){ return this.consumo_medio; }
+
+	public void setConsumo_medio(double consumo_medio){ this.consumo_medio = consumo_medio;}
 
 	public int getId_comp(){ return this.id_comp; }
 
@@ -65,13 +69,11 @@ class Computador{
 	public String getNome(){ return this.nome; }
 
 	public void setNome(String nome){ this.nome = nome; }
-
 	/* Métodos sobrescrevidos da classe Object */
 
 	@Override
 	public String toString(){
-		return "\nNome: "+this.nome+"\n"
-		      +"Id_tipo: "+this.id_tipo+"\n"
+		return "Nome do computador: "+this.nome+"\n"
 		      +"Consumo maximo: "+(this.consumo_max == -1 ? "não definido" : String.format("%.2f", this.consumo_max))+"\n"
 		      +"Consumo médio: "+(this.consumo_medio == -1 ? "não definido" : String.format("%.2f",  this.consumo_medio))+"\n";
 	}	

@@ -31,7 +31,7 @@ insert into Computador_Setor values  	(1, 1),
 go
 
 
-insert into Historico_horas(id_comp, horas, data_hist) values  (1, '00:00:00', '10-05-2020'),
+insert into Historico_horas(id_comp, horas, data_hist) values  (1, '00:00:00', '2020-05-10'),
 								(2, '00:00:00', '2020-05-10'),
 								(3, '00:00:00', '2020-05-10'),
 								(4, '00:00:00', '2020-05-10'),
